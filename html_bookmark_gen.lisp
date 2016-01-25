@@ -67,26 +67,16 @@
 
 (create-header)
 
-(let ((in (open *in* :if-does-not-exist nil)))
-  (when in
-    (loop for line = (read-line in nil)
-         while line do (push line *list-of-links*))
-    (close in)))
-
-(print *list-of-links*)
-
-;; creating output stream uses open too
-(let ((out (open *out* :direction :output :if-exists nil)))
-  (if out
-      (progn
-	(write-line (create-header) out)
-	(loop for link in *list-of-links*
-	      do (write-line (add-tags link) out))
-	(close out))
-    (format t "~%Error! Output filename already exists~%")))
-
-
-
+(with-open-file (in *in* :if-does-not-exist nil)
+  (if in
+    (with-open-file (out *out* :direction :output :if-exists nil)
+      (if out
+	  (progn
+	    (write-line (create-header) out)
+	    (loop for link = (read-line in nil)
+	       while link do (write-line (add-tags link) out)))
+	  (format t "~%Error! Output filename already exists~%")))
+    (format t "~%Error! Input file not found!~%")))
 
 ;; tag legend
 ;; <HR> is for horizontal bar
